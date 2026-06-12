@@ -15,20 +15,26 @@ namespace Hr.DAL
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            // Auto-register all repositories and the Unit of Work using Scrutor
+            // Auto-register using marker interfaces (ITransientService, IScopedService, ISingletonService)
+            var assembly = Hr.DAL.AssemblyReference.Assembly;
+
             services.Scan(scan => scan
-                .FromAssemblyOf<ApplicationDbContext>()
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.ITransientService>())
+                .AsImplementedInterfaces()
+                .WithTransientLifetime());
 
-                // Repositories: IFooRepository → FooRepository (Scoped)
-                .AddClasses(classes => classes.InNamespaces("Hr.DAL.Repositories"))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
+            services.Scan(scan => scan
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.IScopedService>())
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
-                // Unit of Work: IUnitOfWork → UnitOfWork (Scoped)
-                .AddClasses(classes => classes.InNamespaces("Hr.DAL.UnitOfWork"))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
-            );
+            services.Scan(scan => scan
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.ISingletonService>())
+                .AsImplementedInterfaces()
+                .WithSingletonLifetime());
 
             // Lazy<T> wrappers — consumed by UnitOfWork for lazy initialization.
             // The factory delegate defers resolution until .Value is first accessed.

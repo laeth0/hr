@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
+using Hr.DAL.Interfaces;
 using Hr.DAL.Repositories.Interfaces;
 
 namespace Hr.DAL.UnitOfWork
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork : IDisposable, IScopedService
     {
         IEmployeeRepository Employees { get; }
         ILeaveRepository Leaves { get; }
