@@ -21,7 +21,5 @@ namespace Hr.PL.Controllers
         /// </summary>
         protected string? CurrentUserEmail => User.FindFirst(ClaimTypes.Email)?.Value;
 
-        // Note: As the project grows, you can add standard API response wrapper methods here
-        // e.g., protected IActionResult HandleResult<T>(Result<T> result) { ... }
     }
 }

@@ -20,19 +20,19 @@ namespace Hr.DAL
 
             services.Scan(scan => scan
                 .FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.ITransientService>())
+                .AddClasses(classes => classes.AssignableTo<ITransientService>())
                 .AsImplementedInterfaces()
                 .WithTransientLifetime());
 
             services.Scan(scan => scan
                 .FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.IScopedService>())
+                .AddClasses(classes => classes.AssignableTo<IScopedService>())
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 
             services.Scan(scan => scan
                 .FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo<Hr.DAL.Interfaces.ISingletonService>())
+                .AddClasses(classes => classes.AssignableTo<ISingletonService>())
                 .AsImplementedInterfaces()
                 .WithSingletonLifetime());
 
