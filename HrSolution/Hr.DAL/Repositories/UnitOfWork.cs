@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Hr.DAL.Data;
 using Hr.DAL.Repositories;
-using Hr.DAL.Repositories.Interfaces;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
-namespace Hr.DAL.UnitOfWork
+namespace Hr.DAL.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {

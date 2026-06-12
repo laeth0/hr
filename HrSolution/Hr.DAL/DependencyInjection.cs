@@ -3,8 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Hr.DAL.Data;
 using Hr.DAL.Repositories;
-using Hr.DAL.Repositories.Interfaces;
-using Hr.DAL.UnitOfWork;
+using Hr.DAL.Interfaces.MarkerInterfaces;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
 namespace Hr.DAL
 {

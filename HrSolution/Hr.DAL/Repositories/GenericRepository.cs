@@ -4,8 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Hr.DAL.Data;
-using Hr.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
 namespace Hr.DAL.Repositories
 {

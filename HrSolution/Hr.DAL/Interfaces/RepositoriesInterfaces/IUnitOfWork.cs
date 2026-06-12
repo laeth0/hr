@@ -3,10 +3,10 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
-using Hr.DAL.Interfaces;
-using Hr.DAL.Repositories.Interfaces;
+using Hr.DAL.Interfaces.MarkerInterfaces;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
-namespace Hr.DAL.UnitOfWork
+namespace Hr.DAL.Interfaces.RepositoriesInterfaces
 {
     public interface IUnitOfWork : IDisposable, IScopedService
     {

@@ -1,6 +1,7 @@
 using Hr.DAL.Models;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
-namespace Hr.DAL.Repositories.Interfaces
+namespace Hr.DAL.Interfaces.RepositoriesInterfaces
 {
     public interface IAddressRepository : IGenericRepository<Address>
     {

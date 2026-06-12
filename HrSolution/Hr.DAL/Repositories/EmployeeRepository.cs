@@ -1,6 +1,6 @@
 using Hr.DAL.Data;
 using Hr.DAL.Models;
-using Hr.DAL.Repositories.Interfaces;
+using Hr.DAL.Interfaces.RepositoriesInterfaces;
 
 namespace Hr.DAL.Repositories
 {

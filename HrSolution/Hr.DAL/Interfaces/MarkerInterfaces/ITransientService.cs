@@ -1,4 +1,4 @@
-namespace Hr.DAL.Interfaces
+namespace Hr.DAL.Interfaces.MarkerInterfaces
 {
     public interface ITransientService
     {

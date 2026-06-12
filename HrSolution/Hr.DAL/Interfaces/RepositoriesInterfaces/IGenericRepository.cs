@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Hr.DAL.Interfaces;
+using Hr.DAL.Interfaces.MarkerInterfaces;
 
-namespace Hr.DAL.Repositories.Interfaces
+namespace Hr.DAL.Interfaces.RepositoriesInterfaces
 {
     public interface IGenericRepository<T> : IScopedService where T : class
     {
