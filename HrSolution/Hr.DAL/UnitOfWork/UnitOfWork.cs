@@ -1,5 +1,9 @@
 using System;
+using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Hr.DAL.Data;
 using Hr.DAL.Repositories;
 using Hr.DAL.Repositories.Interfaces;
@@ -34,6 +38,30 @@ namespace Hr.DAL.UnitOfWork
 
         public async Task<int> SaveChangesAsync()
             => await _context.SaveChangesAsync();
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        }
+
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
+        {
+            if (_context.Database.CurrentTransaction is null) return;
+
+            await _context.Database.CommitTransactionAsync(cancellationToken);
+        }
+
+        public async Task RollbackAsync(CancellationToken cancellationToken = default)
+        {
+            if (_context.Database.CurrentTransaction is null) return;
+
+            await _context.Database.RollbackTransactionAsync(cancellationToken);
+        }
+
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
+        }
 
         // ── IDisposable pattern ───────────────────────────────────────────────
 
