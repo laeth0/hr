@@ -1,13 +1,14 @@
 using Hr.DAL.Data;
-using Hr.DAL.Models;
 using Hr.DAL.Interfaces.RepositoriesInterfaces;
+using Hr.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hr.DAL.Repositories
 {
-    public class AddressRepository : GenericRepository<Address>, IAddressRepository
+    public class AddressRepository(ApplicationDbContext context)
+        : GenericRepository<Address>(context), IAddressRepository
     {
-        public AddressRepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public Task<Address?> GetByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
+            => _dbSet.FirstOrDefaultAsync(a => a.EmployeeId == employeeId, cancellationToken);
     }
 }
