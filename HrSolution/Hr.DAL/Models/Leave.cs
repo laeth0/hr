@@ -3,14 +3,22 @@ using Hr.DAL.Enums;
 
 namespace Hr.DAL.Models
 {
-    public class Leave
+    public class Leave : BaseEntity
     {
-        public Guid Id { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        // DateOnly — leaves are whole calendar days, not timestamps
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
+
         public LeaveType Type { get; set; }
-        
+        public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
+
+        public string? Reason { get; set; }
+        public string? ReviewerNote { get; set; }
+
         public Guid EmployeeId { get; set; }
-        public Employee Employee { get; set; }
+        public Employee Employee { get; set; } = null!;
+
+        public Guid? ReviewedByManagerId { get; set; }
+        public Employee? ReviewedByManager { get; set; }
     }
 }
