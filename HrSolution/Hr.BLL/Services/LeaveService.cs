@@ -1,4 +1,3 @@
-using FluentValidation;
 using Hr.BLL.Common;
 using Hr.BLL.DTOs.Leaves;
 using Hr.BLL.Errors;
@@ -10,11 +9,7 @@ using MapsterMapper;
 
 namespace Hr.BLL.Services
 {
-    public class LeaveService(
-        IUnitOfWork unitOfWork,
-        IMapper mapper,
-        IValidator<CreateLeaveDto> createValidator)
-        : ILeaveService
+    public class LeaveService(IUnitOfWork unitOfWork, IMapper mapper) : ILeaveService
     {
         public async Task<Result<IEnumerable<LeaveDto>>> GetByEmployeeAsync(
             Guid employeeId, CancellationToken cancellationToken = default)
@@ -39,13 +34,6 @@ namespace Hr.BLL.Services
         public async Task<Result<LeaveDto>> RequestLeaveAsync(
             Guid employeeId, CreateLeaveDto dto, CancellationToken cancellationToken = default)
         {
-            var validation = await createValidator.ValidateAsync(dto, cancellationToken);
-            if (!validation.IsValid)
-            {
-                return Result.Failure<LeaveDto>(
-                    Error.Validation(validation.Errors.Select(e => e.ErrorMessage)));
-            }
-
             var employee = await unitOfWork.Employees.GetByIdAsync(employeeId, cancellationToken);
             if (employee is null)
                 return Result.Failure<LeaveDto>(EmployeeErrors.NotFound(employeeId));

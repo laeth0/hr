@@ -1,4 +1,3 @@
-using FluentValidation;
 using Hr.BLL.Common;
 using Hr.BLL.DTOs.Employees;
 using Hr.BLL.Errors;
@@ -9,12 +8,7 @@ using MapsterMapper;
 
 namespace Hr.BLL.Services
 {
-    public class EmployeeService(
-        IUnitOfWork unitOfWork,
-        IMapper mapper,
-        IValidator<CreateEmployeeDto> createValidator,
-        IValidator<UpdateEmployeeDto> updateValidator)
-        : IEmployeeService
+    public class EmployeeService(IUnitOfWork unitOfWork, IMapper mapper) : IEmployeeService
     {
         public async Task<IEnumerable<EmployeeDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
@@ -34,13 +28,6 @@ namespace Hr.BLL.Services
         public async Task<Result<EmployeeDto>> CreateAsync(
             CreateEmployeeDto dto, CancellationToken cancellationToken = default)
         {
-            var validation = await createValidator.ValidateAsync(dto, cancellationToken);
-            if (!validation.IsValid)
-            {
-                return Result.Failure<EmployeeDto>(
-                    Error.Validation(validation.Errors.Select(e => e.ErrorMessage)));
-            }
-
             var emailTaken = await unitOfWork.Employees.GetByEmailAsync(dto.Email, cancellationToken);
             if (emailTaken is not null)
                 return Result.Failure<EmployeeDto>(EmployeeErrors.EmailConflict);
@@ -64,13 +51,6 @@ namespace Hr.BLL.Services
         public async Task<Result<EmployeeDto>> UpdateAsync(
             Guid id, UpdateEmployeeDto dto, CancellationToken cancellationToken = default)
         {
-            var validation = await updateValidator.ValidateAsync(dto, cancellationToken);
-            if (!validation.IsValid)
-            {
-                return Result.Failure<EmployeeDto>(
-                    Error.Validation(validation.Errors.Select(e => e.ErrorMessage)));
-            }
-
             var employee = await unitOfWork.Employees.GetByIdAsync(id, cancellationToken);
             if (employee is null)
                 return Result.Failure<EmployeeDto>(EmployeeErrors.NotFound(id));
