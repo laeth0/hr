@@ -16,12 +16,6 @@ namespace Hr.DAL.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(a => a.Country)
-                .HasMaxLength(100);
-
-            builder.Property(a => a.PostalCode)
-                .HasMaxLength(20);
-
             // Address is the dependent in the 1:1 — it carries the FK to Employee.
             // Using an explicit EmployeeId column instead of the shared-PK pattern.
             builder

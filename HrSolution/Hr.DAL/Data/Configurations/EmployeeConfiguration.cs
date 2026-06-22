@@ -41,8 +41,6 @@ namespace Hr.DAL.Data.Configurations
             // Common filter: "show only active employees"
             builder.HasIndex(e => e.Status);
 
-            // Soft-delete queries filter on DeletedAt IS NULL
-            builder.HasIndex(e => e.DeletedAt);
         }
     }
 }

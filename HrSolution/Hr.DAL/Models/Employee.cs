@@ -12,12 +12,8 @@ namespace Hr.DAL.Models
         // decimal — never int for money; int loses fractional values
         public decimal Salary { get; set; }
 
-        public DateTime DateOfJoining { get; set; }
         public EmploymentStatus Status { get; set; } = EmploymentStatus.Active;
         public int AllowedLeaveDayPerYear { get; set; }
-
-        // Soft-delete: null = active, non-null = deleted at that point in time
-        public DateTimeOffset? DeletedAt { get; set; }
 
         public Guid? ManagerId { get; set; }
         public Employee? Manager { get; set; }

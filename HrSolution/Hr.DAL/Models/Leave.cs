@@ -13,7 +13,6 @@ namespace Hr.DAL.Models
         public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
 
         public string? Reason { get; set; }
-        public string? ReviewerNote { get; set; }
 
         public Guid EmployeeId { get; set; }
         public Employee Employee { get; set; } = null!;

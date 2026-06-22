@@ -18,9 +18,6 @@ namespace Hr.DAL.Data.Configurations
             builder.Property(l => l.Reason)
                 .HasMaxLength(1000);
 
-            builder.Property(l => l.ReviewerNote)
-                .HasMaxLength(1000);
-
             // A leave belongs to exactly one employee
             builder
                 .HasOne(l => l.Employee)
