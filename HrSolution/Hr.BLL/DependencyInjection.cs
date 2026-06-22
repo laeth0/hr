@@ -1,10 +1,10 @@
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using FluentValidation;
+using Hr.DAL;
 using Mapster;
 using MapsterMapper;
-using Hr.DAL;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Hr.BLL
 {

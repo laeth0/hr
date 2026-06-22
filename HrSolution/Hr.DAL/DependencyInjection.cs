@@ -1,10 +1,9 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Hr.DAL.Data;
-using Hr.DAL.Repositories;
 using Hr.DAL.Interfaces.MarkerInterfaces;
 using Hr.DAL.Interfaces.RepositoriesInterfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hr.DAL
 {
@@ -16,7 +15,7 @@ namespace Hr.DAL
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             // Auto-register using marker interfaces (ITransientService, IScopedService, ISingletonService)
-            var assembly = Hr.DAL.AssemblyReference.Assembly;
+            var assembly = AssemblyReference.Assembly;
 
             services.Scan(scan => scan
                 .FromAssemblies(assembly)
