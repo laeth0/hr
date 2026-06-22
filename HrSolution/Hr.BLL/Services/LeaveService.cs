@@ -1,6 +1,7 @@
 using FluentValidation;
+using Hr.BLL.Common;
 using Hr.BLL.DTOs.Leaves;
-using Hr.BLL.Exceptions;
+using Hr.BLL.Errors;
 using Hr.BLL.Interfaces;
 using Hr.DAL.Enums;
 using Hr.DAL.Interfaces.RepositoriesInterfaces;
@@ -15,51 +16,56 @@ namespace Hr.BLL.Services
         IValidator<CreateLeaveDto> createValidator)
         : ILeaveService
     {
-        public async Task<IEnumerable<LeaveDto>> GetByEmployeeAsync(
+        public async Task<Result<IEnumerable<LeaveDto>>> GetByEmployeeAsync(
             Guid employeeId, CancellationToken cancellationToken = default)
         {
             var exists = await unitOfWork.Employees.ExistsAsync(employeeId, cancellationToken);
             if (!exists)
-                throw new NotFoundException(nameof(Employee), employeeId);
+                return Result.Failure<IEnumerable<LeaveDto>>(EmployeeErrors.NotFound(employeeId));
 
             var leaves = await unitOfWork.Leaves.GetByEmployeeAsync(employeeId, cancellationToken);
-            return mapper.Map<IEnumerable<LeaveDto>>(leaves);
+            return Result.Success(mapper.Map<IEnumerable<LeaveDto>>(leaves));
         }
 
-        public async Task<LeaveDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Result<LeaveDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var leave = await unitOfWork.Leaves.GetByIdAsync(id, cancellationToken)
-                ?? throw new NotFoundException(nameof(Leave), id);
+            var leave = await unitOfWork.Leaves.GetByIdAsync(id, cancellationToken);
 
-            return mapper.Map<LeaveDto>(leave);
+            return leave is null
+                ? Result.Failure<LeaveDto>(LeaveErrors.NotFound(id))
+                : Result.Success(mapper.Map<LeaveDto>(leave));
         }
 
-        public async Task<LeaveDto> RequestLeaveAsync(
+        public async Task<Result<LeaveDto>> RequestLeaveAsync(
             Guid employeeId, CreateLeaveDto dto, CancellationToken cancellationToken = default)
         {
-            await createValidator.ValidateAndThrowAsync(dto, cancellationToken);
+            var validation = await createValidator.ValidateAsync(dto, cancellationToken);
+            if (!validation.IsValid)
+            {
+                return Result.Failure<LeaveDto>(
+                    Error.Validation(validation.Errors.Select(e => e.ErrorMessage)));
+            }
 
-            var employee = await unitOfWork.Employees.GetByIdAsync(employeeId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Employee), employeeId);
+            var employee = await unitOfWork.Employees.GetByIdAsync(employeeId, cancellationToken);
+            if (employee is null)
+                return Result.Failure<LeaveDto>(EmployeeErrors.NotFound(employeeId));
 
             var hasOverlap = await unitOfWork.Leaves.HasOverlappingLeaveAsync(
                 employeeId, dto.StartDate, dto.EndDate, cancellationToken: cancellationToken);
 
             if (hasOverlap)
-                throw new BusinessRuleException("The requested dates overlap with an existing leave.");
+                return Result.Failure<LeaveDto>(LeaveErrors.DateOverlap);
 
             if (dto.Type == LeaveType.Annual)
             {
-                var remaining = CalculateRemainingDays(
-                    employee, await unitOfWork.Leaves.GetByEmployeeAndYearAsync(
-                        employeeId, dto.StartDate.Year, cancellationToken));
+                var yearLeaves = await unitOfWork.Leaves
+                    .GetByEmployeeAndYearAsync(employeeId, dto.StartDate.Year, cancellationToken);
 
+                var remaining = CalculateRemainingDays(employee, yearLeaves);
                 var requestedDays = dto.EndDate.DayNumber - dto.StartDate.DayNumber + 1;
+
                 if (requestedDays > remaining)
-                {
-                    throw new BusinessRuleException(
-                        $"Insufficient annual leave balance. Requested: {requestedDays} day(s), remaining: {remaining}.");
-                }
+                    return Result.Failure<LeaveDto>(LeaveErrors.InsufficientBalance(requestedDays, remaining));
             }
 
             var leave = mapper.Map<Leave>(dto);
@@ -69,17 +75,18 @@ namespace Hr.BLL.Services
             await unitOfWork.Leaves.AddAsync(leave, cancellationToken);
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<LeaveDto>(leave);
+            return Result.Success(mapper.Map<LeaveDto>(leave));
         }
 
-        public async Task<LeaveDto> ApproveLeaveAsync(
+        public async Task<Result<LeaveDto>> ApproveLeaveAsync(
             Guid leaveId, Guid managerId, CancellationToken cancellationToken = default)
         {
-            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Leave), leaveId);
+            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken);
+            if (leave is null)
+                return Result.Failure<LeaveDto>(LeaveErrors.NotFound(leaveId));
 
             if (leave.Status != LeaveStatus.Pending)
-                throw new BusinessRuleException($"Only pending leaves can be approved. Current status: {leave.Status}.");
+                return Result.Failure<LeaveDto>(LeaveErrors.NotPending(leave.Status));
 
             leave.Status = LeaveStatus.Approved;
             leave.ReviewedByManagerId = managerId;
@@ -87,17 +94,18 @@ namespace Hr.BLL.Services
             unitOfWork.Leaves.Update(leave);
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<LeaveDto>(leave);
+            return Result.Success(mapper.Map<LeaveDto>(leave));
         }
 
-        public async Task<LeaveDto> RejectLeaveAsync(
+        public async Task<Result<LeaveDto>> RejectLeaveAsync(
             Guid leaveId, Guid managerId, CancellationToken cancellationToken = default)
         {
-            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Leave), leaveId);
+            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken);
+            if (leave is null)
+                return Result.Failure<LeaveDto>(LeaveErrors.NotFound(leaveId));
 
             if (leave.Status != LeaveStatus.Pending)
-                throw new BusinessRuleException($"Only pending leaves can be rejected. Current status: {leave.Status}.");
+                return Result.Failure<LeaveDto>(LeaveErrors.NotPending(leave.Status));
 
             leave.Status = LeaveStatus.Rejected;
             leave.ReviewedByManagerId = managerId;
@@ -105,35 +113,41 @@ namespace Hr.BLL.Services
             unitOfWork.Leaves.Update(leave);
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<LeaveDto>(leave);
+            return Result.Success(mapper.Map<LeaveDto>(leave));
         }
 
-        public async Task CancelLeaveAsync(Guid leaveId, CancellationToken cancellationToken = default)
+        public async Task<Result> CancelLeaveAsync(Guid leaveId, CancellationToken cancellationToken = default)
         {
-            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Leave), leaveId);
+            var leave = await unitOfWork.Leaves.GetByIdAsync(leaveId, cancellationToken);
+            if (leave is null)
+                return Result.Failure(LeaveErrors.NotFound(leaveId));
 
             if (leave.Status is LeaveStatus.Rejected or LeaveStatus.Cancelled)
-                throw new BusinessRuleException($"A {leave.Status.ToString().ToLower()} leave cannot be cancelled.");
+                return Result.Failure(LeaveErrors.CannotCancel(leave.Status));
 
             leave.Status = LeaveStatus.Cancelled;
 
             unitOfWork.Leaves.Update(leave);
             await unitOfWork.SaveChangesAsync();
+
+            return Result.Success();
         }
 
-        public async Task<int> GetRemainingLeaveDaysAsync(
+        public async Task<Result<int>> GetRemainingLeaveDaysAsync(
             Guid employeeId, LeaveType type, int year, CancellationToken cancellationToken = default)
         {
-            var employee = await unitOfWork.Employees.GetByIdAsync(employeeId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Employee), employeeId);
+            var employee = await unitOfWork.Employees.GetByIdAsync(employeeId, cancellationToken);
+            if (employee is null)
+                return Result.Failure<int>(EmployeeErrors.NotFound(employeeId));
 
-            var leaves = await unitOfWork.Leaves.GetByEmployeeAndYearAsync(employeeId, year, cancellationToken);
-            return CalculateRemainingDays(employee, leaves, type);
+            var yearLeaves = await unitOfWork.Leaves
+                .GetByEmployeeAndYearAsync(employeeId, year, cancellationToken);
+
+            return Result.Success(CalculateRemainingDays(employee, yearLeaves, type));
         }
 
-        // Calculates remaining days for a specific leave type (defaults to Annual).
-        // Extracted to avoid re-fetching the employee and year leaves in RequestLeaveAsync.
+        // Reused by RequestLeaveAsync (quota check) and GetRemainingLeaveDaysAsync.
+        // Static so it cannot accidentally close over instance state.
         private static int CalculateRemainingDays(
             Employee employee,
             IEnumerable<Leave> yearLeaves,
