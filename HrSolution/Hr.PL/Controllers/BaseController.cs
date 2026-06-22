@@ -1,25 +1,46 @@
-using System.Security.Claims;
+using Hr.BLL.Common;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Hr.PL.Controllers
 {
-    /// <summary>
-    /// Base controller for all API controllers in the application.
-    /// Provides common routing, API behavioral attributes, and helper properties.
-    /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
     public abstract class BaseController : ControllerBase
     {
-        /// <summary>
-        /// Retrieves the Current User's ID from the JWT claims, if authenticated.
-        /// </summary>
         protected string? CurrentUserId => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        /// <summary>
-        /// Retrieves the Current User's Email from the JWT claims, if authenticated.
-        /// </summary>
         protected string? CurrentUserEmail => User.FindFirst(ClaimTypes.Email)?.Value;
 
+        protected IActionResult OkOrProblem<T>(Result<T> result)
+            => result.IsSuccess ? Ok(result.Value) : MapError(result.Error);
+
+        protected IActionResult NoContentOrProblem(Result result)
+            => result.IsSuccess ? NoContent() : MapError(result.Error);
+
+        protected IActionResult MapError(Error error) => error.Type switch
+        {
+            ErrorType.NotFound => NotFound(new ProblemDetails
+            {
+                Title = error.Code,
+                Detail = error.Message,
+                Status = StatusCodes.Status404NotFound
+            }),
+            ErrorType.Conflict => Conflict(new ProblemDetails
+            {
+                Title = error.Code,
+                Detail = error.Message,
+                Status = StatusCodes.Status409Conflict
+            }),
+            ErrorType.Validation => BadRequest(new ValidationProblemDetails(
+                new Dictionary<string, string[]> { [""] = error.Details?.ToArray() ?? [] })
+            {
+                Status = StatusCodes.Status400BadRequest
+            }),
+            _ => StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Title = error.Code,
+                Detail = error.Message,
+                Status = StatusCodes.Status500InternalServerError
+            })
+        };
     }
 }
