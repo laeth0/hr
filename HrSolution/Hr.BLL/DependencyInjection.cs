@@ -1,5 +1,6 @@
 using FluentValidation;
 using Hr.DAL;
+using Hr.DAL.Interfaces.MarkerInterfaces;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.Configuration;
@@ -10,21 +11,28 @@ namespace Hr.BLL
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddBllDependencies(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddBllDependencies(
+            this IServiceCollection services, IConfiguration configuration)
         {
-            // Register DAL dependencies
             services.AddDalDependencies(configuration);
 
             var assembly = Assembly.GetExecutingAssembly();
 
-            // Register Mapster mapping configuration
+            // Mapster — scan assembly for IRegister implementations (MappingConfig)
             var typeAdapterConfig = TypeAdapterConfig.GlobalSettings;
             typeAdapterConfig.Scan(assembly);
             services.AddSingleton(typeAdapterConfig);
             services.AddScoped<IMapper, ServiceMapper>();
 
-            // Register FluentValidation validators
+            // FluentValidation — auto-register all validators in this assembly
             services.AddValidatorsFromAssembly(assembly);
+
+            // Auto-register BLL services that implement IScopedService
+            services.Scan(scan => scan
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<IScopedService>())
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
             return services;
         }
