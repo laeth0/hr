@@ -4,5 +4,8 @@
     <Project Path="Hr.DAL/Hr.DAL.csproj"/>
     <Project Path="Hr.PL/Hr.PL.csproj"/>
   </Folder>
-  <Folder Name="/test/"/>
+  <Folder Name="/test/">
+    <Project Path="Hr.Tests.Unit/Hr.Tests.Unit.csproj"/>
+    <Project Path="Hr.Tests.Integration/Hr.Tests.Integration.csproj"/>
+  </Folder>
 </Solution>

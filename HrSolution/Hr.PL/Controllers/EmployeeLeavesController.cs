@@ -1,7 +1,6 @@
 using Hr.BLL.DTOs.Leaves;
 using Hr.BLL.Interfaces;
 using Hr.DAL.Enums;
-using Hr.PL.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hr.PL.Controllers
@@ -17,7 +16,6 @@ namespace Hr.PL.Controllers
         }
 
         [HttpPost]
-        [TypeFilter(typeof(ValidationFilter<CreateLeaveDto>))]
         public async Task<IActionResult> RequestLeave(
             Guid employeeId, CreateLeaveDto dto, CancellationToken cancellationToken)
         {

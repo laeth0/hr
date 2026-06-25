@@ -1,6 +1,5 @@
 using Hr.BLL.DTOs.Addresses;
 using Hr.BLL.Interfaces;
-using Hr.PL.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hr.PL.Controllers
@@ -16,7 +15,6 @@ namespace Hr.PL.Controllers
         }
 
         [HttpPost]
-        [TypeFilter(typeof(ValidationFilter<CreateAddressDto>))]
         public async Task<IActionResult> Create(
             Guid employeeId, CreateAddressDto dto, CancellationToken cancellationToken)
         {
@@ -27,7 +25,6 @@ namespace Hr.PL.Controllers
         }
 
         [HttpPut]
-        [TypeFilter(typeof(ValidationFilter<UpdateAddressDto>))]
         public async Task<IActionResult> Update(
             Guid employeeId, UpdateAddressDto dto, CancellationToken cancellationToken)
         {

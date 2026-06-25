@@ -1,6 +1,5 @@
 using Hr.BLL.DTOs.Employees;
 using Hr.BLL.Interfaces;
-using Hr.PL.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hr.PL.Controllers
@@ -23,7 +22,6 @@ namespace Hr.PL.Controllers
         }
 
         [HttpPost]
-        [TypeFilter(typeof(ValidationFilter<CreateEmployeeDto>))]
         public async Task<IActionResult> Create(CreateEmployeeDto dto, CancellationToken cancellationToken)
         {
             var result = await employeeService.CreateAsync(dto, cancellationToken);
@@ -33,7 +31,6 @@ namespace Hr.PL.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [TypeFilter(typeof(ValidationFilter<UpdateEmployeeDto>))]
         public async Task<IActionResult> Update(Guid id, UpdateEmployeeDto dto, CancellationToken cancellationToken)
         {
             var result = await employeeService.UpdateAsync(id, dto, cancellationToken);
