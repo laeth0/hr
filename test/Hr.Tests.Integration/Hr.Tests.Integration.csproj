@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hr.PL\Hr.PL.csproj" />
-    <ProjectReference Include="..\Hr.DAL\Hr.DAL.csproj" />
+    <ProjectReference Include="..\..\src\Hr.PL\Hr.PL.csproj" />
+    <ProjectReference Include="..\..\src\Hr.DAL\Hr.DAL.csproj" />
   </ItemGroup>
 
 </Project>

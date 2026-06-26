@@ -1,11 +1,11 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="Hr.BLL/Hr.BLL.csproj"/>
-    <Project Path="Hr.DAL/Hr.DAL.csproj"/>
-    <Project Path="Hr.PL/Hr.PL.csproj"/>
+    <Project Path="src/Hr.BLL/Hr.BLL.csproj"/>
+    <Project Path="src/Hr.DAL/Hr.DAL.csproj"/>
+    <Project Path="src/Hr.PL/Hr.PL.csproj"/>
   </Folder>
   <Folder Name="/test/">
-    <Project Path="Hr.Tests.Unit/Hr.Tests.Unit.csproj"/>
-    <Project Path="Hr.Tests.Integration/Hr.Tests.Integration.csproj"/>
+    <Project Path="test/Hr.Tests.Unit/Hr.Tests.Unit.csproj"/>
+    <Project Path="test/Hr.Tests.Integration/Hr.Tests.Integration.csproj"/>
   </Folder>
 </Solution>
